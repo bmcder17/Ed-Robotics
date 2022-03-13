@@ -8,6 +8,7 @@ import time
 import board
 import adafruit_tcs34725
 from adafruit_servokit import ServoKit
+import knn
 
 # Create sensor object, communicating over the board's default I2C bus
 i2c = board.I2C()  # uses board.SCL and board.SDA
@@ -24,6 +25,18 @@ kit.servo[0].angle = 60
 
 # Change sensor gain to 1, 4, 16, or 60
 # sensor.gain = 4
+
+
+# Data is a dictionary of 5(?)-tuple: motor-angle
+training_data = {}
+
+# Add a data point (temp and lux not necessary but doable)
+training_data[(r,g,b,t,l)] = "Servo angle"
+
+# Get current nearest neighbor angle
+target_angle = knn.nearest_neighbor(training_data, (r,g,b,t,l))
+
+
 
 # Main loop reading color and printing it every second.
 while True:
