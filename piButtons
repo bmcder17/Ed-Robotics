@@ -3,12 +3,9 @@ import signal
 import sys
 import RPi.GPIO as GPIO
 BUTTON_GPIO = 16
-
 def signal_handler(sig, frame):
     GPIO.cleanup()
     sys.exit(0)
-
-    
 def button_pressed_callback(channel):
     print("Button pressed!")
 if __name__ == '__main__':
