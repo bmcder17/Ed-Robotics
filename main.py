@@ -8,6 +8,7 @@ import time
 import board
 import adafruit_tcs34725
 from adafruit_servokit import ServoKit
+import knn
 
 # Create sensor object, communicating over the board's default I2C bus
 i2c = board.I2C()  # uses board.SCL and board.SDA
@@ -25,8 +26,43 @@ kit.servo[0].angle = 60
 # Change sensor gain to 1, 4, 16, or 60
 # sensor.gain = 4
 
-# Main loop reading color and printing it every second.
+
+# Data is a dictionary of 5(?)-tuple: motor-angle
+training_data = {}
+running = False
+
+# Add a data point (temp and lux not necessary but doable)
+
+
+
+def go_to_angle(theta):
+    # Write code to make the motor go to theta (0-360)
+
+
+def button_pressed_callback(channel):
+    if (training_button):
+        training_data[sensor.color_rgb_bytes] = "Servo angle"
+        running = False
+    if (run_button):
+        running = True
+    print("Button pressed!")
+
+# Main loop. Two modes Running and not. Not running is when we are training
+# Running is when it should just react to what it "sees"
 while True:
+    if running:
+       target_angle = knn.nearest_neighbor(training_data, sensor.color_rgb_bytes)
+       go_to_angle(target_angle)
+    time.sleep(0.1)
+
+
+
+
+
+
+
+
+
     # Raw data from the sensor in a 4-tuple of red, green, blue, clear light component values
     # print(sensor.color_raw)
 
