@@ -7,6 +7,7 @@
 import time
 import board
 import serial
+import RPi.GPIO as GPIO
 import adafruit_tcs34725
 from adafruit_servokit import ServoKit
 import knn
@@ -35,56 +36,73 @@ TEST_BUTTON = 23
 TRAIN_BUTTON = 24
 RESET_BUTTON = 25
 ASK_GPIO = 18
-LOW = GPIO.LOW
-HIGH = GPIO.HIGH
+READ_STATE = False
 
 running = True
-training = !running
+
+def training_pressed_callback(channel):
+    train_data[sensor.color_rgb_bytes] = read_angle()
+    running = False
+    print("training pressed!")
+
+def testing_pressed_callback(channel):
+    running = True
+    print("Button pressed!")
+
 
 # GPIO init.
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(ASK_GPIO, GPIO.OUT)
-GPIO.output(ASK_GPIO, LOW)
-GPIO.setup(TRAIN_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.add_event_detect(BUTTON_GPIO, GPIO.RISING, 
-        callback=train_pressed_callback, bouncetime=100)
-GPIO.setup(TRAIN_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.add_event_detect(BUTTON_GPIO, GPIO.RISING, 
-        callback=train_pressed_callback, bouncetime=100)
-
-# Data is a dictionary of 5(?)-tuple: motor-angle
-training_data = {}
-running = False
-
-# Add a data point (temp and lux not necessary but doable)
+GPIO.output(ASK_GPIO, READ_STATE)
+GPIO.setup(TRAIN_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.add_event_detect(TRAIN_BUTTON, GPIO.RISING, 
+        callback=training_pressed_callback, bouncetime=100)
+GPIO.setup(TEST_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.add_event_detect(TEST_BUTTON, GPIO.RISING, 
+        callback=testing_pressed_callback, bouncetime=100)
 
 # Serial Init
 ser = serial.Serial ("/dev/ttyS0", 9600)    #Open port with baud rate
 GPIO.cleanup()
 ser.reset_input_buffer()
 
+# Data is a dictionary of 5(?)-tuple: motor-angle
+training_data = {}
+#running = False
+
+# Add a data point (temp and lux not necessary but doable)
+
+
+
 def go_to_angle(theta):
     # Write code to make the motor go to theta (0-135)
+    if theta > 135:
+        theta = 135
+    elif theta < 0:
+        theta = 0
     theta_p = theta / 135
     pulse = (1750*theta_p) + 500
     
 def read_angle():
+    READ_STATE = not(READ_STATE)
+    GPIO.output(ASK_GPIO, READ_STATE)
+    received_data = ser.read() #read serial port
+    sleep(0.03)
+    data_left = ser.inWaiting()
+    received_data += ser.read(data_left)
+    print(received_data)
+    servo_angle = int(received_data)
+    #print(servo_angle)
+    return servo_angle
 
-
-def training_pressed_callback(channel):
-    train_data[sensor.color_rgb_bytes] = "Servo angle"
-    running = False
-    print("Button pressed!")
-
-def testing_pressed_callback(channel):
-    running = True
-print("Button pressed!")
 
 # Main loop. Two modes Running and not. Not running is when we are training
 # Running is when it should just react to what it "sees"
 try:
     while True:
+        print(running)
         if running:
+           print('what')
            target_angle = knn.nearest_neighbor(training_data, sensor.color_rgb_bytes)
            go_to_angle(target_angle)
         time.sleep(0.1)
