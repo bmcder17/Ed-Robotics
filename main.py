@@ -29,17 +29,40 @@ kit.servo[0].angle = 60
 
 # Data is a dictionary of 5(?)-tuple: motor-angle
 training_data = {}
+running = False
 
 # Add a data point (temp and lux not necessary but doable)
-training_data[(r,g,b,t,l)] = "Servo angle"
-
-# Get current nearest neighbor angle
-target_angle = knn.nearest_neighbor(training_data, (r,g,b,t,l))
 
 
 
-# Main loop reading color and printing it every second.
+def go_to_angle(theta):
+    # Write code to make the motor go to theta (0-360)
+
+
+def button_pressed_callback(channel):
+    if (training_button):
+        training_data[sensor.color_rgb_bytes] = "Servo angle"
+        running = False
+    if (run_button):
+        running = True
+    print("Button pressed!")
+
+# Main loop. Two modes Running and not. Not running is when we are training
+# Running is when it should just react to what it "sees"
 while True:
+    if running:
+       target_angle = knn.nearest_neighbor(training_data, sensor.color_rgb_bytes)
+       go_to_angle(target_angle)
+    time.sleep(0.1)
+
+
+
+
+
+
+
+
+
     # Raw data from the sensor in a 4-tuple of red, green, blue, clear light component values
     # print(sensor.color_raw)
 
