@@ -2,11 +2,14 @@ const int interruptPin = 2;
 const int ledPin = 3;
 volatile byte state = LOW;
 const int n = 10;
+const int minIN = 170;
+const int maxIN = 710;
+const int deltaIN = 540;
 int samples[n];
 void setup() {
   pinMode(ledPin, OUTPUT);
   pinMode(interruptPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(interruptPin), avg_analog, RISING);
+  attachInterrupt(digitalPinToInterrupt(interruptPin), avg_analog, CHANGE);
   Serial.begin(9600);
 }
 
@@ -45,12 +48,16 @@ void avg_analog() {
     }
     int avg = total / n;
     //Serial.print("[");
-    for (int i = 0; i < n; i++) {
+    //for (int i = 0; i < n; i++) {
        // Serial.print(samples[i]);
         //if (i < (n-1)) Serial.print(",");
-    }
+    //}
     //Serial.println("]");
-    Serial.println(avg);
+    //Serial.println(avg);
+
+    //convert from mv to theta
+    int theta = (avg-minIN)/deltaIN;
+    Serial.print(theta);
   }
   last_interrupt_time = interrupt_time;
   

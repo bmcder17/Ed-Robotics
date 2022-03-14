@@ -1,7 +1,7 @@
 import math
 
 def distance_squared(a, b):
-    return sum([a[i]-b[i] for i in range(len(a))])
+    return sum([(a[i]-b[i])**2 for i in range(len(a))])
 
 
 
