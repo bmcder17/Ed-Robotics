@@ -10,6 +10,8 @@ import serial
 import RPi.GPIO as GPIO
 import adafruit_tcs34725
 from adafruit_servokit import ServoKit
+import adafruit_ads1x15.ads1015 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
 import knn
 from servoExample import PCA9685
 import smbus
@@ -31,6 +33,14 @@ print(sensor.integration_time)
 # Change sensor gain to 1, 4, 16, or 60
 # sensor.gain = 4
 
+# Create the ADC object using the I2C bus
+ads = ADS.ADS1115(i2c)
+# you can specify an I2C adress instead of the default 0x48
+# ads = ADS.ADS1115(i2c, address=0x49)
+
+# Create single-ended input on channel 0
+chan = AnalogIn(ads, ADS.P0)
+
 # Defines
 TEST_BUTTON = 26
 TRAIN_BUTTON = 19
@@ -41,6 +51,8 @@ READ_STATE = False
 
 running = True
 
+# Interrupt handler function definitions
+
 def training_pressed_callback(channel):
     train_data[sensor.color_rgb_bytes] = read_angle()
     running = False
@@ -49,6 +61,9 @@ def training_pressed_callback(channel):
 def testing_pressed_callback(channel):
     running = True
     print("Button pressed!")
+
+def reset_pressed_callback(channel):
+    pass
 
 
 # GPIO init.
@@ -64,10 +79,6 @@ GPIO.setup(TEST_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.add_event_detect(TEST_BUTTON, GPIO.FALLING, 
         callback=testing_pressed_callback, bouncetime=100)
 
-# Serial Init
-ser = serial.Serial ("/dev/ttyS0", 9600)    #Open port with baud rate
-GPIO.cleanup()
-ser.reset_input_buffer()
 
 # Data is a dictionary of 5(?)-tuple: motor-angle
 training_data = {}
@@ -89,13 +100,7 @@ def go_to_angle(theta):
     
 def read_angle():
     READ_STATE = not(READ_STATE)
-    GPIO.output(ASK_GPIO, READ_STATE)
-    received_data = ser.read() #read serial port
-    sleep(0.03)
-    data_left = ser.inWaiting()
-    received_data += ser.read(data_left)
-    print(received_data)
-    servo_angle = int(received_data)
+    servo_angle = int(chan.value)
     #print(servo_angle)
     return servo_angle
 
@@ -139,6 +144,9 @@ try:
         print("Temperature: {0}K Lux: {1}\n".format(temp, lux))
         # Delay for a second and repeat.
         time.sleep(1.0)
+
+
 except KeyboardInterrupt:
+    # Clean up on exit
     GPIO.cleanup()
     ser.close()
