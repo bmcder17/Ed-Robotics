@@ -15,8 +15,8 @@ from servoExample import PCA9685
 import smbus
 
 # Servo Driver
-pwm = PCA9685(0x40, debug=True)
-pwm.setPWMFreq(50)
+#pwm = PCA9685(0x40, debug=True)
+#pwm.setPWMFreq(50)
 sleepTime = 2
 
 # Create sensor object, communicating over the board's default I2C bus
@@ -32,10 +32,11 @@ print(sensor.integration_time)
 # sensor.gain = 4
 
 # Defines
-TEST_BUTTON = 23
-TRAIN_BUTTON = 24
-RESET_BUTTON = 25
-ASK_GPIO = 18
+TEST_BUTTON = 26
+TRAIN_BUTTON = 19
+RESET_BUTTON = 21
+ASK_GPIO = 4
+LED_GPIO = 27
 READ_STATE = False
 
 running = True
@@ -54,11 +55,13 @@ def testing_pressed_callback(channel):
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(ASK_GPIO, GPIO.OUT)
 GPIO.output(ASK_GPIO, READ_STATE)
+GPIO.setup(LED_GPIO,GPIO.OUT)
+GPIO.output(LED_GPIO, 0)
 GPIO.setup(TRAIN_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.add_event_detect(TRAIN_BUTTON, GPIO.RISING, 
+GPIO.add_event_detect(TRAIN_BUTTON, GPIO.FALLING, 
         callback=training_pressed_callback, bouncetime=100)
 GPIO.setup(TEST_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.add_event_detect(TEST_BUTTON, GPIO.RISING, 
+GPIO.add_event_detect(TEST_BUTTON, GPIO.FALLING, 
         callback=testing_pressed_callback, bouncetime=100)
 
 # Serial Init
@@ -68,7 +71,7 @@ ser.reset_input_buffer()
 
 # Data is a dictionary of 5(?)-tuple: motor-angle
 training_data = {}
-#running = False
+running = False
 
 # Add a data point (temp and lux not necessary but doable)
 
@@ -82,6 +85,7 @@ def go_to_angle(theta):
         theta = 0
     theta_p = theta / 135
     pulse = (1750*theta_p) + 500
+    #pwm.setServoPulse(pulse)
     
 def read_angle():
     READ_STATE = not(READ_STATE)
@@ -100,10 +104,13 @@ def read_angle():
 # Running is when it should just react to what it "sees"
 try:
     while True:
-        print(running)
+        #print(running)
         if running:
-           print('what')
+           #print('what')
+           #GPIO.output(LED_GPIO,1)
+           time.sleep(0.01)
            target_angle = knn.nearest_neighbor(training_data, sensor.color_rgb_bytes)
+           #GPIO.output(LED_GPIO,0)
            go_to_angle(target_angle)
         time.sleep(0.1)
 
@@ -125,7 +132,7 @@ try:
                 color, color_rgb
             )
         )
-
+        print(type(color_rgb[1]))
         # Read the color temperature and lux of the sensor too.
         temp = sensor.color_temperature
         lux = sensor.lux

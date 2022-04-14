@@ -18,9 +18,9 @@ sleepTime = 2
 # SG90 Servo values
 # start input 549 output 112
 # end input 2688 output 550 
-pwm.setServoPulse(0, 500)  # output 102 0x0066 0.5ms ~170mV
+pwm.setServoPulse(0, 1000)  #  500 output 102 0x0066 0.5ms ~170mV
 time.sleep(2)
-pwm.setServoPulse(0, 2250)  # output 460 0x01CC 2.25ms ~710mV
+pwm.setServoPulse(0, 2000)  # 2250 output 460 0x01CC 2.25ms ~710mV
 time.sleep(2)
 pwm.setServoPulse(0, 0)  
 #pwm.setServoPulse(1, 2500)

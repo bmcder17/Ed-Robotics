@@ -3,9 +3,7 @@ import signal
 import sys
 import RPi.GPIO as GPIO
 import time
-BUTTON_GPIO = 12
-
-# Known good gpios 21, 20, 26, 19, 13, 6, 5 
+BUTTON_GPIO = 21
 
 def signal_handler(sig, frame):
     GPIO.cleanup()
@@ -21,13 +19,14 @@ def please():
 if __name__ == '__main__':
     
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(BUTTON_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.add_event_detect(BUTTON_GPIO, GPIO.FALLING, callback=button_pressed_callback, bouncetime=200)
+    GPIO.setup(BUTTON_GPIO, GPIO.OUT)
+    GPIO.output(BUTTON_GPIO, 1)
+    time.sleep(2)
+    #GPIO.add_event_detect(BUTTON_GPIO, GPIO.RISING, callback=please, bouncetime=200)
     print("hi")
     #signal.signal(signal.SIGINT, signal_handler)
     print("hello")
     #signal.pause()
-    message = input("fun")
-    time.sleep(1)
-    print("what")
+    message = input("yes")
+    GPIO.output(BUTTON_GPIO, 0)
     GPIO.cleanup()
