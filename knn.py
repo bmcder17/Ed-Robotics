@@ -7,5 +7,6 @@ def distance_squared(a, b):
 
 def nearest_neighbor(data, current_value):
     if len(data) == 0:
+        #print("failed")
         return None
     return min(map(lambda kv : (distance_squared(current_value, kv[0]), kv[1]), data.items()))[1]

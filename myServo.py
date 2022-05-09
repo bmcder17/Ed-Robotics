@@ -45,11 +45,11 @@ print("{:>5}\t{:>5.3f}".format(chan.value, chan.voltage))
 time.sleep(0.5)
 print("{:>5}\t{:>5.3f}".format(chan.value, chan.voltage))
 time.sleep(2)
-pwm.setServoPulse(0, 2250)  # pulse:2250  value:18784  voltage:2.35V 
+pwm.setServoPulse(0, 2120)  # pulse:2250  value:18784  voltage:2.35V 
 time.sleep(2)
 print("{:>5}\t{:>5.3f}".format(chan.value, chan.voltage))
 time.sleep(2)
-
+input()
 pwm.setServoPulse(0, 0)  
 #pwm.setServoPulse(1, 2500)
 
